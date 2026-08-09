@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name= "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,6 +31,9 @@ public class User {
     private String passwordHash;
 
     @Column(name= "persona_type", length = 50)
+    private String personaType;
+
+    @Column(name = "currency", length = 50)
     @Builder.Default
     private String currency = "INR";
 
