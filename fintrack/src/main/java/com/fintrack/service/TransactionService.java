@@ -90,7 +90,7 @@ public class TransactionService {
     }
 
     // ─── GET ALL TRANSACTIONS ────────────────────────────────────────
-
+    @Transactional
     public List<TransactionResponse> getAllTransactions(String email) {
 
         User user = userRepository.findByEmail(email)
@@ -105,7 +105,7 @@ public class TransactionService {
     }
 
     // ─── GET SINGLE TRANSACTION ──────────────────────────────────────
-
+    @Transactional
     public TransactionResponse getTransactionById(
             Long transactionId, String email) {
 
@@ -182,7 +182,7 @@ public class TransactionService {
     }
 
     // ─── GET SUMMARY ─────────────────────────────────────────────────
-
+    @Transactional
     public SummaryResponse getSummary(
             String email, LocalDate start, LocalDate end) {
 
