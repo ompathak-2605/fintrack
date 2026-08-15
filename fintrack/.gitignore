@@ -31,3 +31,10 @@ build/
 application.properties
 ### VS Code ###
 .vscode/
+
+
+# Frontend dependencies
+fintrack-frontend/node_modules/
+fintrack-frontend/dist/
+fintrack-frontend/.env
+fintrack-frontend/.env.local
