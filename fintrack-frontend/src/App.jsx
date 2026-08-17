@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -8,19 +8,37 @@ import Budgets from './pages/Budgets'
 import Goals from './pages/Goals'
 
 function AppContent() {
-  const { loading } = useAuth()
-  const [page, setPage] = useState('login')
+  const { user, loading } = useAuth()
+  const [page, setPage] = useState(null)
 
   const handleNavigate = (newPage) => {
     setPage(newPage)
   }
 
-  if (loading) {
+  // When auth finishes loading, decide starting page
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        // Token exists in localStorage — go to dashboard
+        setPage('dashboard')
+      } else {
+        // No token — go to login
+        setPage('login')
+      }
+    }
+  }, [loading, user])
+
+  // Show spinner while auth is being checked
+  if (loading || page === null) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center
                       justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-indigo-500
-                        border-t-transparent rounded-full"/>
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin w-10 h-10 border-2
+                          border-indigo-500 border-t-transparent
+                          rounded-full"/>
+          <p className="text-slate-500 text-sm">Loading FinTrack...</p>
+        </div>
       </div>
     )
   }
@@ -32,12 +50,7 @@ function AppContent() {
   if (page === 'budgets') return <Budgets onNavigate={handleNavigate} />
   if (page === 'goals') return <Goals onNavigate={handleNavigate} />
 
-  return (
-    <div className="min-h-screen bg-slate-900 flex items-center
-                    justify-center">
-      <p className="text-white">Page coming soon...</p>
-    </div>
-  )
+  return null
 }
 
 export default function App() {

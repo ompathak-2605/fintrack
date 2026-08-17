@@ -23,6 +23,8 @@ export default function Sidebar({ currentPage, onNavigate }) {
   return (
     <div className="w-64 h-screen bg-slate-800 border-r border-slate-700
                     flex flex-col fixed left-0 top-0">
+    <div className="hidden md:flex w-64 h-screen bg-slate-800
+                    border-r border-slate-700 flex-col fixed left-0 top-0"></div>
 
       {/* Logo */}
       <div className="p-6 border-b border-slate-700">
