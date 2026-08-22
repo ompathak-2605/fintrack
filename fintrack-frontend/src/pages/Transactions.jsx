@@ -8,6 +8,7 @@ import Sidebar from '../components/layout/Sidebar'
 import AddTransactionModal from '../components/common/AddTransactionModal'
 import api from '../api/axios'
 import { formatCurrency, formatDate } from '../utils/helpers'
+import MobileNav from '../components/layout/MobileNev'
 
 export default function Transactions({ onNavigate }) {
   const [transactions, setTransactions] = useState([])
@@ -80,11 +81,11 @@ export default function Transactions({ onNavigate }) {
   return (
     <div className="min-h-screen bg-slate-900 flex">
       <Sidebar currentPage="transactions" onNavigate={onNavigate} />
-
+      <MobileNav currentPage="transactions" onNavigate={onNavigate} />
       <div className="flex-1 ml-64 p-8">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 overflow-auto">
           <div>
             <h2 className="text-2xl font-bold text-white">Transactions</h2>
             <p className="text-slate-400 text-sm mt-1">

@@ -4,6 +4,7 @@ import { Plus, X, Target, Trophy, Clock, TrendingUp } from 'lucide-react'
 import Sidebar from '../components/layout/Sidebar'
 import api from '../api/axios'
 import { formatCurrency, formatDate } from '../utils/helpers'
+import MobileNav from '../components/layout/MobileNev'
 
 export default function Goals({ onNavigate }) {
   const [goals, setGoals] = useState([])
@@ -111,8 +112,9 @@ export default function Goals({ onNavigate }) {
   return (
     <div className="min-h-screen bg-slate-900 flex">
       <Sidebar currentPage="goals" onNavigate={onNavigate} />
+      <MobileNav currentPage="goals" onNavigate={onNavigate} />
 
-      <div className="flex-1 ml-64 p-8">
+      <div className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 overflow-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

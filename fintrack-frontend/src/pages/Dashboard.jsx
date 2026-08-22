@@ -12,6 +12,7 @@ import Sidebar from '../components/layout/Sidebar'
 import StatCard from '../components/common/StatCard'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
+import MobileNav from '../components/layout/MobileNev'
 import { formatCurrency, formatDate } from '../utils/helpers'
 
 const COLORS = [
@@ -64,10 +65,13 @@ export default function Dashboard({ onNavigate }) {
 
   return (
     <div className="min-h-screen bg-slate-900 flex">
+      {/*Desktop sidebar */}
       <Sidebar currentPage="dashboard" onNavigate={onNavigate} />
 
+      {/*Desktop sidebar */}
+      <MobileNav currentPage="dashboard" onNavigate={onNavigate} />
       {/* Main content */}
-      <div className="flex-1 ml-64 p-8 overflow-auto">
+      <div className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 overflow-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

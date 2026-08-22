@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
+import MobileNav from '../components/layout/MobileNev'
 
 const PERSONA_TYPES = [
   { value: 'STUDENT', label: '🎒 Student', desc: 'Managing pocket money' },
@@ -65,15 +66,17 @@ export default function Register({ onNavigate }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center
-                    justify-center p-4">
-
+    <div className="min-h-screen bg-slate-900 flex">
+       <Sidebar currentPage="register" onNavigate={onNavigate} />
+        <MobileNav currentPage="register" onNavigate={onNavigate} />
+         <div className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 overflow-auto">
       {/* Background blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80
                         bg-indigo-500 rounded-full opacity-10 blur-3xl"/>
         <div className="absolute -bottom-40 -left-40 w-80 h-80
                         bg-purple-500 rounded-full opacity-10 blur-3xl"/>
+      </div>
       </div>
 
       <motion.div
