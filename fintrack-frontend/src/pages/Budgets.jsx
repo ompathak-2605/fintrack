@@ -135,7 +135,7 @@ export default function Budgets({ onNavigate }) {
     <div className="min-h-screen bg-slate-900 flex">
       <Sidebar currentPage="budgets" onNavigate={onNavigate} />
        <MobileNav currentPage="budget" onNavigate={onNavigate} />
-      <div className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 overflow-auto">
+      <div className="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

@@ -15,20 +15,18 @@ function AppContent() {
     setPage(newPage)
   }
 
-  // When auth finishes loading, decide starting page
   useEffect(() => {
     if (!loading) {
       if (user) {
-        // Token exists in localStorage — go to dashboard
-        setPage('dashboard')
+        if (page === null || page === 'login' || page === 'register') {
+          setPage('dashboard')
+        }
       } else {
-        // No token — go to login
         setPage('login')
       }
     }
   }, [loading, user])
 
-  // Show spinner while auth is being checked
   if (loading || page === null) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center

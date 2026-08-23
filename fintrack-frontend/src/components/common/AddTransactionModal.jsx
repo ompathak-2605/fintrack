@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, Edit2 } from 'lucide-react'
 import api from '../../api/axios'
 
 const PAYMENT_METHODS = ['CASH', 'UPI', 'CARD', 'NETBANKING']
 const NECESSITY_TYPES = ['NEED', 'WANT']
 
-export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
+export default function AddTransactionModal({
+  isOpen, onClose, onSuccess, transaction = null
+}) {
+  const isEditMode = transaction !== null
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -23,8 +26,27 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
   })
 
   useEffect(() => {
-    if (isOpen) fetchCategories()
-  }, [isOpen])
+    if (isOpen) {
+      fetchCategories()
+      if (isEditMode && transaction) {
+        // Pre-fill form with existing transaction data
+        setFormData({
+          amount: transaction.amount?.toString() || '',
+          categoryId: transaction.categoryId?.toString() || '',
+          type: transaction.type || 'EXPENSE',
+          description: transaction.description || '',
+          merchant: transaction.merchant || '',
+          transactionDate: transaction.transactionDate || 
+            new Date().toISOString().split('T')[0],
+          paymentMethod: transaction.paymentMethod || 'CASH',
+          necessityType: transaction.necessityType || 'NEED',
+          isRecurring: transaction.isRecurring || false,
+        })
+      } else {
+        resetForm()
+      }
+    }
+  }, [isOpen, transaction])
 
   const fetchCategories = async () => {
     try {
@@ -54,12 +76,21 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
         amount: parseFloat(formData.amount),
         categoryId: parseInt(formData.categoryId),
       }
-      await api.post('/transactions', payload)
+
+      if (isEditMode) {
+        await api.put(`/transactions/${transaction.id}`, payload)
+      } else {
+        await api.post('/transactions', payload)
+      }
+
       onSuccess()
       onClose()
       resetForm()
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add transaction')
+      setError(
+        err.response?.data?.message ||
+        `Failed to ${isEditMode ? 'update' : 'add'} transaction`
+      )
     } finally {
       setLoading(false)
     }
@@ -84,7 +115,6 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -93,7 +123,6 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -102,21 +131,31 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
             className="fixed inset-0 z-50 flex items-center
                        justify-center p-4"
           >
-            <div className="bg-slate-800 rounded-3xl border border-slate-700
-                            shadow-2xl w-full max-w-md max-h-[90vh]
-                            overflow-y-auto">
+            <div className="bg-slate-800 rounded-3xl border
+                            border-slate-700 shadow-2xl w-full
+                            max-w-md max-h-[90vh] overflow-y-auto">
 
               {/* Header */}
               <div className="flex items-center justify-between p-6
-                              border-b border-slate-700">
-                <h2 className="text-lg font-semibold text-white">
-                  Add Transaction
-                </h2>
+                              border-b border-slate-700 sticky top-0
+                              bg-slate-800 z-10">
+                <div className="flex items-center gap-2">
+                  {isEditMode
+                    ? <Edit2 size={18} className="text-indigo-400" />
+                    : <Plus size={18} className="text-indigo-400" />
+                  }
+                  <h2 className="text-lg font-semibold text-white">
+                    {isEditMode
+                      ? 'Edit Transaction'
+                      : 'Add Transaction'}
+                  </h2>
+                </div>
                 <button
                   onClick={onClose}
                   className="w-8 h-8 flex items-center justify-center
-                             rounded-lg text-slate-400 hover:text-white
-                             hover:bg-slate-700 transition-all"
+                             rounded-lg text-slate-400
+                             hover:text-white hover:bg-slate-700
+                             transition-all"
                 >
                   <X size={18} />
                 </button>
@@ -124,12 +163,15 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
 
-                {/* Error */}
                 {error && (
-                  <div className="bg-red-500/10 border border-red-500/30
-                                  rounded-xl p-3">
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-red-500/10 border border-red-500/30
+                               rounded-xl p-3"
+                  >
                     <p className="text-red-400 text-sm">{error}</p>
-                  </div>
+                  </motion.div>
                 )}
 
                 {/* Type toggle */}
@@ -138,9 +180,11 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                     <button
                       key={t}
                       type="button"
-                      onClick={() => setFormData({ ...formData, type: t })}
-                      className={`flex-1 py-2 rounded-lg text-sm font-medium
-                                 transition-all duration-200
+                      onClick={() => setFormData({
+                        ...formData, type: t
+                      })}
+                      className={`flex-1 py-2 rounded-lg text-sm
+                                 font-medium transition-all duration-200
                         ${formData.type === t
                           ? t === 'EXPENSE'
                             ? 'bg-red-500 text-white shadow-lg'
@@ -155,12 +199,14 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                 {/* Amount */}
                 <div>
-                  <label className="text-sm text-slate-400 mb-1.5 block">
+                  <label className="text-sm text-slate-400
+                                    mb-1.5 block">
                     Amount
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2
-                                     text-slate-400 font-medium">₹</span>
+                    <span className="absolute left-4 top-1/2
+                                     -translate-y-1/2 text-slate-400
+                                     font-medium">₹</span>
                     <input
                       type="number"
                       name="amount"
@@ -182,7 +228,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                 {/* Category */}
                 <div>
-                  <label className="text-sm text-slate-400 mb-1.5 block">
+                  <label className="text-sm text-slate-400
+                                    mb-1.5 block">
                     Category
                   </label>
                   <select
@@ -207,7 +254,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                 {/* Description */}
                 <div>
-                  <label className="text-sm text-slate-400 mb-1.5 block">
+                  <label className="text-sm text-slate-400
+                                    mb-1.5 block">
                     Description
                   </label>
                   <input
@@ -227,7 +275,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                 {/* Merchant */}
                 <div>
-                  <label className="text-sm text-slate-400 mb-1.5 block">
+                  <label className="text-sm text-slate-400
+                                    mb-1.5 block">
                     Merchant / Source
                   </label>
                   <input
@@ -247,7 +296,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                 {/* Date */}
                 <div>
-                  <label className="text-sm text-slate-400 mb-1.5 block">
+                  <label className="text-sm text-slate-400
+                                    mb-1.5 block">
                     Date
                   </label>
                   <input
@@ -266,7 +316,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                 {/* Payment method */}
                 <div>
-                  <label className="text-sm text-slate-400 mb-1.5 block">
+                  <label className="text-sm text-slate-400
+                                    mb-1.5 block">
                     Payment Method
                   </label>
                   <div className="grid grid-cols-4 gap-2">
@@ -290,11 +341,12 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                   </div>
                 </div>
 
-                {/* Necessity type — only for expenses */}
+                {/* Necessity type */}
                 {formData.type === 'EXPENSE' && (
                   <div>
-                    <label className="text-sm text-slate-400 mb-1.5 block">
-                      Is this a Need or Want?
+                    <label className="text-sm text-slate-400
+                                      mb-1.5 block">
+                      Need or Want?
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       {NECESSITY_TYPES.map((type) => (
@@ -304,8 +356,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                           onClick={() => setFormData({
                             ...formData, necessityType: type
                           })}
-                          className={`py-2.5 rounded-xl text-sm font-medium
-                                     transition-all duration-200
+                          className={`py-2.5 rounded-xl text-sm
+                                     font-medium transition-all
                             ${formData.necessityType === type
                               ? type === 'NEED'
                                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
@@ -326,13 +378,17 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                   disabled={loading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-indigo-500 hover:bg-indigo-600
-                             disabled:opacity-50 text-white font-semibold
-                             py-3 rounded-xl transition-all duration-200
-                             shadow-lg shadow-indigo-500/25 mt-2"
+                  className={`w-full text-white font-semibold py-3
+                             rounded-xl transition-all duration-200 mt-2
+                             shadow-lg disabled:opacity-50
+                    ${isEditMode
+                      ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25'
+                      : 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-500/25'
+                    }`}
                 >
                   {loading ? (
-                    <span className="flex items-center justify-center gap-2">
+                    <span className="flex items-center
+                                     justify-center gap-2">
                       <svg className="animate-spin h-4 w-4"
                            viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12"
@@ -341,13 +397,10 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                         <path className="opacity-75" fill="currentColor"
                               d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"/>
                       </svg>
-                      Adding...
+                      {isEditMode ? 'Saving...' : 'Adding...'}
                     </span>
                   ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Plus size={18} />
-                      Add Transaction
-                    </span>
+                    isEditMode ? 'Save Changes' : 'Add Transaction'
                   )}
                 </motion.button>
               </form>
