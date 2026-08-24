@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Plus, Search, Filter,
+  Plus, Search, Filter, Edit2,
   ArrowUpRight, ArrowDownRight, Trash2
 } from 'lucide-react'
 import Sidebar from '../components/layout/Sidebar'
@@ -9,6 +9,7 @@ import AddTransactionModal from '../components/common/AddTransactionModal'
 import api from '../api/axios'
 import { formatCurrency, formatDate } from '../utils/helpers'
 import MobileNav from '../components/layout/MobileNev'
+
 
 export default function Transactions({ onNavigate }) {
   const [transactions, setTransactions] = useState([])
@@ -18,6 +19,8 @@ export default function Transactions({ onNavigate }) {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('ALL')
   const [deleting, setDeleting] = useState(null)
+  const [editingTransaction, setEditingTransaction] = useState(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetchTransactions()
@@ -95,7 +98,10 @@ export default function Transactions({ onNavigate }) {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setModalOpen(true)}
+            onClick={() => {
+              setModalOpen(true)
+              setEditingTransaction(null)
+            }}
             className="flex items-center gap-2 px-5 py-2.5
                        bg-indigo-500 hover:bg-indigo-600
                        text-white font-medium rounded-xl
@@ -322,11 +328,62 @@ export default function Transactions({ onNavigate }) {
         )}
       </div>
 
+        {/* Amount and actions */}
+<div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+  <p className={`text-sm font-semibold
+    ${txn.type === 'INCOME'
+      ? 'text-emerald-400'
+      : 'text-red-400'}`}
+  >
+    {txn.type === 'INCOME' ? '+' : '-'}
+    {formatCurrency(txn.amount)}
+  </p>
+
+  {/* Edit button */}
+  <motion.button
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
+    onClick={() => {
+      setEditingTransaction(txn)
+      setModalOpen(true)
+    }}
+    className="w-8 h-8 flex items-center justify-center
+               rounded-lg text-slate-600
+               hover:text-indigo-400 hover:bg-indigo-500/10
+               opacity-0 group-hover:opacity-100
+               transition-all duration-200"
+  >
+    <Edit2 size={16} />
+  </motion.button>
+
+  {/* Delete button */}
+  <motion.button
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
+    onClick={() => handleDelete(txn.id)}
+    disabled={deleting === txn.id}
+    className="w-8 h-8 flex items-center justify-center
+               rounded-lg text-slate-600
+               hover:text-red-400 hover:bg-red-500/10
+               opacity-0 group-hover:opacity-100
+               transition-all duration-200"
+  >
+    {deleting === txn.id
+      ? <div className="w-4 h-4 border-2 border-red-400/50
+                        border-t-transparent rounded-full
+                        animate-spin"/>
+      : <Trash2 size={16} />
+    }
+  </motion.button>
+</div>
       {/* Add Transaction Modal */}
       <AddTransactionModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {setModalOpen(false)
+                       setEditingTransaction(null)
+        }}
         onSuccess={fetchTransactions}
+        transition={editingTransaction}
       />
     </div>
   )
