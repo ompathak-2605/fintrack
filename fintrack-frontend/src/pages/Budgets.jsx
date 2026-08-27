@@ -4,7 +4,7 @@ import { Plus, X, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react'
 import Sidebar from '../components/layout/Sidebar'
 import api from '../api/axios'
 import { formatCurrency } from '../utils/helpers'
-import MobileNav from '../components/layout/MobileNev'
+import MobileNav from '../components/layout/MobileNav'
 
 const PERIODS = ['DAILY', 'WEEKLY', 'MONTHLY']
 

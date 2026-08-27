@@ -4,7 +4,7 @@ import { Plus, X, Target, Trophy, Clock, TrendingUp } from 'lucide-react'
 import Sidebar from '../components/layout/Sidebar'
 import api from '../api/axios'
 import { formatCurrency, formatDate } from '../utils/helpers'
-import MobileNav from '../components/layout/MobileNev'
+import MobileNav from '../components/layout/MobileNav'
 
 export default function Goals({ onNavigate }) {
   const [goals, setGoals] = useState([])

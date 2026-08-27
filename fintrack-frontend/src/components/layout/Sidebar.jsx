@@ -55,9 +55,9 @@ export default function Sidebar({ currentPage, onNavigate }) {
                          rounded-xl text-sm font-medium transition-all
                          duration-200 text-left
                          ${isActive
-                           ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-                           : 'text-slate-400 hover:bg-slate-700 hover:text-white'
-                         }`}
+                  ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+                  : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                }`}
             >
               <Icon size={18} />
               {item.label}
@@ -71,7 +71,18 @@ export default function Sidebar({ currentPage, onNavigate }) {
           )
         })}
       </nav>
-
+      {/* Profile link */}
+      <motion.button
+        onClick={() => onNavigate('profile')}
+        whileHover={{ x: 4 }}
+        className="w-full flex items-center gap-3 px-4 py-2
+                    rounded-xl text-sm text-slate-400
+                    hover:bg-slate-700 hover:text-white
+                    transition-all duration-200"
+      >
+        <User size={16} />
+        Edit Profile
+      </motion.button>
       {/* User info and logout */}
       <div className="p-4 border-t border-slate-700">
         <div className="flex items-center gap-3 px-4 py-3 mb-2
