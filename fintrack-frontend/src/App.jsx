@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Budgets from './pages/Budgets'
 import Goals from './pages/Goals'
+import Profile from './pages/Profile'
 
 function AppContent() {
   const { user, loading } = useAuth()
@@ -15,17 +16,17 @@ function AppContent() {
     setPage(newPage)
   }
 
-  useEffect(() => {
-    if (!loading) {
-      if (user) {
-        if (page === null || page === 'login' || page === 'register') {
-          setPage('dashboard')
-        }
-      } else {
-        setPage('login')
+useEffect(() => {
+  if (!loading) {
+    if (user && localStorage.getItem('fintrack_token')) {
+      if (page === null || page === 'login' || page === 'register') {
+        setPage('dashboard')
       }
+    } else {
+      setPage('login')
     }
-  }, [loading, user])
+  }
+}, [loading, user])
 
   if (loading || page === null) {
     return (
@@ -47,6 +48,7 @@ function AppContent() {
   if (page === 'transactions') return <Transactions onNavigate={handleNavigate} />
   if (page === 'budgets') return <Budgets onNavigate={handleNavigate} />
   if (page === 'goals') return <Goals onNavigate={handleNavigate} />
+  if (page === 'profile') return <Profile onNavigate={handleNavigate} />
 
   return null
 }

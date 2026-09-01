@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  User, Mail, Briefcase, DollarSign,
-  Save, ArrowLeft, Check
-} from 'lucide-react'
+import { User, Mail, Save, ArrowLeft, Check } from 'lucide-react'
 import Sidebar from '../components/layout/Sidebar'
 import MobileNav from '../components/layout/MobileNav'
 import { useAuth } from '../context/AuthContext'
@@ -18,7 +15,7 @@ const PERSONA_TYPES = [
 ]
 
 export default function Profile({ onNavigate }) {
-  const { user, login, token } = useAuth()
+  const { user, login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -28,6 +25,12 @@ export default function Profile({ onNavigate }) {
     monthlyIncome: user?.monthlyIncome || '',
     currency: user?.currency || 'INR',
   })
+
+  // Guard — if no user, redirect to login
+  if (!user) {
+    onNavigate('login')
+    return null
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -43,9 +46,9 @@ export default function Profile({ onNavigate }) {
         currency: formData.currency,
       })
 
-      // Update auth context with new user data
       const updatedUser = res.data.data
-      login(updatedUser, token)
+      const currentToken = localStorage.getItem('fintrack_token')
+      login(updatedUser, currentToken)
 
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -71,8 +74,7 @@ export default function Profile({ onNavigate }) {
             onClick={() => onNavigate('dashboard')}
             className="w-9 h-9 flex items-center justify-center
                        rounded-xl bg-slate-800 border border-slate-700
-                       text-slate-400 hover:text-white
-                       transition-all"
+                       text-slate-400 hover:text-white transition-all"
           >
             <ArrowLeft size={18} />
           </button>
@@ -94,7 +96,8 @@ export default function Profile({ onNavigate }) {
                        border-slate-700 mb-6 flex items-center gap-4"
           >
             <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl
-                            flex items-center justify-center flex-shrink-0">
+                            flex items-center justify-center
+                            flex-shrink-0">
               <User size={28} className="text-indigo-400" />
             </div>
             <div>
@@ -135,8 +138,9 @@ export default function Profile({ onNavigate }) {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-emerald-500/10 border border-emerald-500/30
-                           rounded-xl p-3 mb-4 flex items-center gap-2"
+                className="bg-emerald-500/10 border
+                           border-emerald-500/30 rounded-xl p-3
+                           mb-4 flex items-center gap-2"
               >
                 <Check size={16} className="text-emerald-400" />
                 <p className="text-emerald-400 text-sm">
@@ -149,7 +153,8 @@ export default function Profile({ onNavigate }) {
 
               {/* Name */}
               <div>
-                <label className="text-sm text-slate-400 mb-1.5 block">
+                <label className="text-sm text-slate-400
+                                  mb-1.5 block">
                   Full name
                 </label>
                 <div className="relative">
@@ -163,9 +168,10 @@ export default function Profile({ onNavigate }) {
                       ...formData, name: e.target.value
                     })}
                     required
-                    className="w-full bg-slate-900 border border-slate-700
-                               rounded-xl py-3 pl-10 pr-4 text-white
-                               text-sm focus:outline-none
+                    className="w-full bg-slate-900 border
+                               border-slate-700 rounded-xl py-3
+                               pl-10 pr-4 text-white text-sm
+                               focus:outline-none
                                focus:border-indigo-500
                                focus:ring-1 focus:ring-indigo-500
                                transition-all"
@@ -175,9 +181,12 @@ export default function Profile({ onNavigate }) {
 
               {/* Email — read only */}
               <div>
-                <label className="text-sm text-slate-400 mb-1.5 block">
+                <label className="text-sm text-slate-400
+                                  mb-1.5 block">
                   Email address
-                  <span className="text-slate-600 ml-2">(cannot change)</span>
+                  <span className="text-slate-600 ml-2">
+                    (cannot change)
+                  </span>
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2
@@ -187,16 +196,18 @@ export default function Profile({ onNavigate }) {
                     type="email"
                     value={user?.email || ''}
                     disabled
-                    className="w-full bg-slate-900/50 border border-slate-700/50
-                               rounded-xl py-3 pl-10 pr-4 text-slate-500
-                               text-sm cursor-not-allowed"
+                    className="w-full bg-slate-900/50 border
+                               border-slate-700/50 rounded-xl py-3
+                               pl-10 pr-4 text-slate-500 text-sm
+                               cursor-not-allowed"
                   />
                 </div>
               </div>
 
               {/* Persona type */}
               <div>
-                <label className="text-sm text-slate-400 mb-1.5 block">
+                <label className="text-sm text-slate-400
+                                  mb-1.5 block">
                   I am a...
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -224,7 +235,8 @@ export default function Profile({ onNavigate }) {
 
               {/* Monthly income */}
               <div>
-                <label className="text-sm text-slate-400 mb-1.5 block">
+                <label className="text-sm text-slate-400
+                                  mb-1.5 block">
                   Monthly income
                 </label>
                 <div className="relative">
@@ -239,10 +251,12 @@ export default function Profile({ onNavigate }) {
                     })}
                     placeholder="Your monthly income"
                     min="0"
-                    className="w-full bg-slate-900 border border-slate-700
-                               rounded-xl py-3 pl-8 pr-4 text-white
+                    className="w-full bg-slate-900 border
+                               border-slate-700 rounded-xl py-3
+                               pl-8 pr-4 text-white
                                placeholder-slate-600 text-sm
-                               focus:outline-none focus:border-indigo-500
+                               focus:outline-none
+                               focus:border-indigo-500
                                focus:ring-1 focus:ring-indigo-500
                                transition-all"
                   />
@@ -251,7 +265,8 @@ export default function Profile({ onNavigate }) {
 
               {/* Currency */}
               <div>
-                <label className="text-sm text-slate-400 mb-1.5 block">
+                <label className="text-sm text-slate-400
+                                  mb-1.5 block">
                   Currency
                 </label>
                 <div className="flex gap-2">
@@ -291,7 +306,8 @@ export default function Profile({ onNavigate }) {
                   <svg className="animate-spin h-4 w-4"
                        viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12"
-                            r="10" stroke="currentColor" strokeWidth="4"/>
+                            r="10" stroke="currentColor"
+                            strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z"/>
                   </svg>

@@ -7,23 +7,23 @@ const api = axios.create({
   },
 })
 
-// Automatically attach JWT token to every request
+// Keep interceptor as backup
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('fintrack_token')
-  if (token) {
+  if (token && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
 
-// Handle 401 responses globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('fintrack_token')
       localStorage.removeItem('fintrack_user')
-      window.location.href = '/login'
+      delete api.defaults.headers.common['Authorization']
+      window.location.href = '/'
     }
     return Promise.reject(error)
   }

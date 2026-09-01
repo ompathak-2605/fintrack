@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import api from '../api/axios'
 
 const AuthContext = createContext(null)
 
@@ -10,7 +11,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const storedToken = localStorage.getItem('fintrack_token')
     const storedUser = localStorage.getItem('fintrack_user')
+
     if (storedToken && storedUser) {
+      // Set token in axios default headers immediately
+      api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
       setToken(storedToken)
       setUser(JSON.parse(storedUser))
     }
@@ -20,6 +24,8 @@ export function AuthProvider({ children }) {
   const login = (userData, jwtToken) => {
     setUser(userData)
     setToken(jwtToken)
+    // Set token in axios default headers immediately on login
+    api.defaults.headers.common['Authorization'] = `Bearer ${jwtToken}`
     localStorage.setItem('fintrack_token', jwtToken)
     localStorage.setItem('fintrack_user', JSON.stringify(userData))
   }
@@ -27,6 +33,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null)
     setToken(null)
+    // Remove token from axios default headers
+    delete api.defaults.headers.common['Authorization']
     localStorage.removeItem('fintrack_token')
     localStorage.removeItem('fintrack_user')
   }

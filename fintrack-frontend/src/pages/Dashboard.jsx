@@ -12,7 +12,7 @@ import Sidebar from '../components/layout/Sidebar'
 import StatCard from '../components/common/StatCard'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
-import MobileNav from '../components/layout/MobileNev'
+import MobileNav from '../components/layout/MobileNav'
 import { formatCurrency, formatDate } from '../utils/helpers'
 
 const COLORS = [
@@ -24,6 +24,7 @@ export default function Dashboard({ onNavigate }) {
   const { user } = useAuth()
   const [summary, setSummary] = useState(null)
   const [transactions, setTransactions] = useState([])
+  const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Get first and last day of current month
@@ -38,20 +39,22 @@ export default function Dashboard({ onNavigate }) {
   }, [])
 
   const fetchData = async () => {
-    setLoading(true)
-    try {
-      const [summaryRes, transactionsRes] = await Promise.all([
-        api.get(`/transactions/summary?start=${startDate}&end=${endDate}`),
-        api.get('/transactions'),
-      ])
-      setSummary(summaryRes.data.data)
-      setTransactions(transactionsRes.data.data || [])
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err)
-    } finally {
-      setLoading(false)
-    }
+  setLoading(true)
+  try {
+    const [summaryRes, transactionsRes, budgetsRes] = await Promise.all([
+      api.get(`/transactions/summary?start=${startDate}&end=${endDate}`),
+      api.get('/transactions'),
+      api.get('/budgets'),
+    ])
+    setSummary(summaryRes.data.data)
+    setTransactions(transactionsRes.data.data || [])
+    setBudgets(budgetsRes.data.data || [])
+  } catch (err) {
+    console.error('Failed to fetch dashboard data:', err)
+  } finally {
+    setLoading(false)
   }
+}
 
   // Prepare pie chart data from category breakdown
   const pieData = summary?.categoryBreakdown
