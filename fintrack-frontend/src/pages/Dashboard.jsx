@@ -39,28 +39,28 @@ export default function Dashboard({ onNavigate }) {
   }, [])
 
   const fetchData = async () => {
-  setLoading(true)
-  try {
-    const [summaryRes, transactionsRes, budgetsRes] = await Promise.all([
-      api.get(`/transactions/summary?start=${startDate}&end=${endDate}`),
-      api.get('/transactions'),
-      api.get('/budgets'),
-    ])
-    setSummary(summaryRes.data.data)
-    setTransactions(transactionsRes.data.data || [])
-    setBudgets(budgetsRes.data.data || [])
-  } catch (err) {
-    console.error('Failed to fetch dashboard data:', err)
-  } finally {
-    setLoading(false)
+    setLoading(true)
+    try {
+      const [summaryRes, transactionsRes, budgetsRes] = await Promise.all([
+        api.get(`/transactions/summary?start=${startDate}&end=${endDate}`),
+        api.get('/transactions'),
+        api.get('/budgets'),
+      ])
+      setSummary(summaryRes.data.data)
+      setTransactions(transactionsRes.data.data || [])
+      setBudgets(budgetsRes.data.data || [])
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   // Prepare pie chart data from category breakdown
   const pieData = summary?.categoryBreakdown
     ? Object.entries(summary.categoryBreakdown).map(([name, value]) => ({
-        name, value: parseFloat(value)
-      }))
+      name, value: parseFloat(value)
+    }))
     : []
 
   // Recent 5 transactions
@@ -107,6 +107,73 @@ export default function Dashboard({ onNavigate }) {
           <LoadingState />
         ) : (
           <>
+            {/* Budget alerts */}
+            {budgets.filter(b =>
+              b.status === 'EXCEEDED' || b.status === 'WARNING'
+            ).length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 space-y-2"
+                >
+                  {budgets
+                    .filter(b =>
+                      b.status === 'EXCEEDED' || b.status === 'WARNING'
+                    )
+                    .map(budget => (
+                      <div
+                        key={budget.id}
+                        className={`flex items-center gap-3 p-4
+                         rounded-xl border
+                ${budget.status === 'EXCEEDED'
+                            ? 'bg-red-500/10 border-red-500/30'
+                            : 'bg-amber-500/10 border-amber-500/30'
+                          }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center
+                              justify-center flex-shrink-0
+                ${budget.status === 'EXCEEDED'
+                            ? 'bg-red-500/20'
+                            : 'bg-amber-500/20'
+                          }`}>
+                          <span className="text-lg">
+                            {budget.status === 'EXCEEDED' ? '🚨' : '⚠️'}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className={`text-sm font-medium
+                  ${budget.status === 'EXCEEDED'
+                              ? 'text-red-400'
+                              : 'text-amber-400'
+                            }`}>
+                            {budget.status === 'EXCEEDED'
+                              ? `${budget.categoryName} budget exceeded!`
+                              : `${budget.categoryName} budget at ${budget.usagePercentage?.toFixed(0)}%`
+                            }
+                          </p>
+                          <p className="text-slate-500 text-xs mt-0.5">
+                            Spent {formatCurrency(budget.spentAmount)} of{' '}
+                            {formatCurrency(budget.limitAmount)} limit
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => onNavigate('budgets')}
+                          className={`text-xs font-medium px-3 py-1.5
+                           rounded-lg transition-all flex-shrink-0
+                  ${budget.status === 'EXCEEDED'
+                              ? 'text-red-400 bg-red-500/10 hover:bg-red-500/20'
+                              : 'text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
+                            }`}
+                        >
+                          View
+                        </button>
+                      </div>
+                    ))
+                  }
+                </motion.div>
+              )}
+
+            {/* Stat cards — already exists below */}
             {/* Stat cards */}
             <div className="grid grid-cols-3 gap-6 mb-8">
               <StatCard
@@ -185,7 +252,7 @@ export default function Dashboard({ onNavigate }) {
                     <div className="flex flex-wrap gap-2 mt-2">
                       {pieData.map((item, index) => (
                         <div key={item.name}
-                             className="flex items-center gap-1.5">
+                          className="flex items-center gap-1.5">
                           <div
                             className="w-2.5 h-2.5 rounded-full"
                             style={{
@@ -231,7 +298,7 @@ export default function Dashboard({ onNavigate }) {
                       tick={{ fill: '#94a3b8', fontSize: 12 }}
                       axisLine={false}
                       tickLine={false}
-                      tickFormatter={(v) => `₹${v/1000}k`}
+                      tickFormatter={(v) => `₹${v / 1000}k`}
                     />
                     <Tooltip
                       formatter={(value) => formatCurrency(value)}
@@ -243,9 +310,9 @@ export default function Dashboard({ onNavigate }) {
                       }}
                     />
                     <Bar dataKey="Income" fill="#10B981"
-                         radius={[6, 6, 0, 0]} />
+                      radius={[6, 6, 0, 0]} />
                     <Bar dataKey="Expenses" fill="#EF4444"
-                         radius={[6, 6, 0, 0]} />
+                      radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </motion.div>
@@ -293,9 +360,9 @@ export default function Dashboard({ onNavigate }) {
                       >
                         {txn.type === 'INCOME'
                           ? <ArrowUpRight size={18}
-                              className="text-emerald-400" />
+                            className="text-emerald-400" />
                           : <ArrowDownRight size={18}
-                              className="text-red-400" />
+                            className="text-red-400" />
                         }
                       </div>
 
@@ -353,8 +420,8 @@ function LoadingState() {
         {[1, 2, 3].map(i => (
           <div key={i} className="bg-slate-800 rounded-2xl p-6
                                    border border-slate-700 animate-pulse">
-            <div className="h-4 bg-slate-700 rounded w-1/2 mb-3"/>
-            <div className="h-8 bg-slate-700 rounded w-3/4"/>
+            <div className="h-4 bg-slate-700 rounded w-1/2 mb-3" />
+            <div className="h-8 bg-slate-700 rounded w-3/4" />
           </div>
         ))}
       </div>
