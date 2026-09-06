@@ -1,5 +1,6 @@
 package com.fintrack.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -12,24 +13,24 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+    @Value("${FRONTEND_URL:http://localhost:5173}")
+    private String frontendUrl;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allowed origins — where requests can come from
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",    // Vite dev server
-                "http://localhost:3000",    // Alternative React port
-                "http://localhost:4173"     // Vite preview server
+                "http://localhost:5173",
+                "http://localhost:4173",
+                frontendUrl
         ));
 
-        // Allowed HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
 
-        // Allowed headers
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -38,13 +39,9 @@ public class CorsConfig {
                 "X-Requested-With"
         ));
 
-        // Allow credentials (needed for Authorization header)
         configuration.setAllowCredentials(true);
-
-        // How long browser caches CORS response (1 hour)
         configuration.setMaxAge(3600L);
 
-        // Apply to all endpoints
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
